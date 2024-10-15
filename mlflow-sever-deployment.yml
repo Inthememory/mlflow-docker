@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow-server-deployment
+  namespace: machine-learning
+  labels:
+    app: mlflow-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlflow-server
+  template:
+    metadata:
+      labels:
+        app: mlflow-server
+    spec:
+      imagePullSecrets:
+      - name: acr-secret
+      containers:
+      - name: mlflow-server
+        image: memorydatapoc.azurecr.io/mlflow_server:latest
+        env:
+          - name: MLFLOW_S3_ENDPOINT_URL
+            value: http://mlflow_minio:9000
+          - name: AWS_ACCESS_KEY_ID
+            value: ${MINIO_ACCESS_KEY}
+          - name: AWS_SECRET_ACCESS_KEY
+            value: ${MINIO_SECRET_ACCESS_KEY}
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow-server-service
+spec:
+  type: NodePort
+  selector:
+    app: mlflow-server
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+      nodePort: 30000

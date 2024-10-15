@@ -30,7 +30,21 @@ MINIO_CONSOLE_PORT=XXXX
 
 ## How to run
 ```
-docker-compose --env-file config.env up -d --build
+# Log in to the ACR
+az acr login --name myContainerRegistry
+
+# Build the images
+docker-compose build
+
+# Tag the images with the ACR URL
+docker tag mlflow_server myContainerRegistry.azurecr.io/mlflow_server:latest
+docker tag postgres myContainerRegistry.azurecr.io/mlflow_db:latest
+docker tag minio/minio myContainerRegistry.azurecr.io/mlflow_minio:latest
+
+# Push Images to Azure Container Registry
+docker push myContainerRegistry.azurecr.io/mlflow_server:latest
+docker push myContainerRegistry.azurecr.io/mlflow_db:latest
+docker push myContainerRegistry.azurecr.io/mlflow_minio:latest
 ```
 
 ## Starting the MLflow UI
